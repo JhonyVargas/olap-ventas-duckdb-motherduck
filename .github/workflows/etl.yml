@@ -1,0 +1,64 @@
+name: ETL OLAP (pruebas + carga a MotherDuck)
+
+on:
+  push:
+    branches: [main]
+    paths: ["etl/**", "sql/**", "tests/**", "requirements*.txt", ".github/workflows/**"]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 11 * * *"   # todos los días 06:00 hora de Perú (UTC-5): carga del día anterior
+  workflow_dispatch:       # botón "Run workflow" para ejecutarlo a mano
+
+concurrency:
+  group: etl-olap
+  cancel-in-progress: false
+
+jobs:
+  pruebas:
+    name: Pruebas del cubo OLAP
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: pytest -v
+
+  carga:
+    name: Cargar el modelo estrella en MotherDuck
+    needs: pruebas
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      MOTHERDUCK_TOKEN: ${{ secrets.MOTHERDUCK_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Verificar secreto
+        run: |
+          if [ -z "$MOTHERDUCK_TOKEN" ]; then
+            echo "::error::Falta el secreto MOTHERDUCK_TOKEN (Settings > Secrets and variables > Actions)"
+            exit 1
+          fi
+      - name: Ejecutar ETL
+        run: python -m etl.pipeline
+      - name: Resumen
+        run: |
+          python - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          from etl.db import get_connection
+          con = get_connection()
+          r = con.execute("""
+              SELECT count(*), min(fecha), max(fecha), round(sum(monto_venta), 2)
+              FROM v_ventas""").fetchone()
+          print("### Carga completada en MotherDuck")
+          print("| Ventas | Desde | Hasta | Monto total (S/) |")
+          print("|---|---|---|---|")
+          print(f"| {r[0]:,} | {r[1]} | {r[2]} | {r[3]:,} |")
+          EOF
