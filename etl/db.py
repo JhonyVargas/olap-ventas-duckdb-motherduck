@@ -23,10 +23,11 @@ def get_connection(token: str | None = None, local_path: Path | str | None = Non
     """
     token = token or get_token()
     if token and local_path is None:
-        con = duckdb.connect(f"md:?motherduck_token={token}")
-        con.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
-        con.execute(f"USE {DB_NAME}")
-        return con
+        with duckdb.connect(f"md:?motherduck_token={token}") as con:
+            con.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
+        # Conectar directo a la base (y no con USE): un USE solo afecta a esa conexión,
+        # mientras que los cursores (con.cursor(), que usa el dashboard) arrancarían en my_db.
+        return duckdb.connect(f"md:{DB_NAME}?motherduck_token={token}")
 
     path = Path(local_path) if local_path else LOCAL_DB_PATH
     path.parent.mkdir(parents=True, exist_ok=True)
