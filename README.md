@@ -7,7 +7,9 @@ Solución de **procesamiento analítico en línea (OLAP)** construida sin AWS:
 - **GitHub Actions** automatiza las pruebas y la carga diaria de datos a MotherDuck.
 - **Streamlit Community Cloud** publica el dashboard interactivo en una URL pública.
 
-> 🔗 **Demo:** `https://<tu-app>.streamlit.app` · 📝 **Artículo:** `<enlace a Medium/Dev.to>` · 🎥 **Video:** `<enlace>`
+> 🔗 **Demo:** [olap-ventas-jhony.streamlit.app](https://olap-ventas-jhony.streamlit.app) · 📝 **Artículo:** [Despliegue automatizado de un cubo OLAP con GitHub Actions y MotherDuck (Dev.to)](https://dev.to/jhonyvargas/despliegue-automatizado-de-un-cubo-olap-con-github-actions-y-motherduck-y-los-2-errores-que-mas-1k84) · 🎥 **Video:** *próximamente*
+
+![Dashboard del cubo OLAP en Streamlit Community Cloud](docs/img/dashboard.png)
 
 ---
 
@@ -96,7 +98,7 @@ streamlit run streamlit_app.py  # http://localhost:8501
 1. **MotherDuck:** crea una cuenta gratis en [motherduck.com](https://motherduck.com) → *Settings → Access Tokens* → crea un token.
 2. **GitHub:** sube este repositorio como **público** → *Settings → Secrets and variables → Actions* → nuevo secreto `MOTHERDUCK_TOKEN`.
 3. **Primera carga:** pestaña *Actions* → *ETL OLAP* → **Run workflow**. Al terminar, la base `olap_ventas` aparece en MotherDuck.
-4. **Streamlit Cloud:** en [share.streamlit.io](https://share.streamlit.io) → *Create app* → elige el repo, rama `main`, archivo `streamlit_app.py` → *Advanced settings → Secrets*:
+4. **Streamlit Cloud:** en [share.streamlit.io](https://share.streamlit.io) → *Create app* → elige el repo, rama `main`, archivo `streamlit_app.py` → *Advanced settings*: **Python 3.12** y, en *Secrets*:
    ```toml
    MOTHERDUCK_TOKEN = "tu_token"
    ```

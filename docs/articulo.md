@@ -11,8 +11,8 @@ Cuando se habla de OLAP (*Online Analytical Processing*) se suele pensar en serv
 - **Streamlit Community Cloud**: publica un dashboard en una URL pública.
 - **GitHub Actions**: automatiza las pruebas y la carga de datos.
 
-📦 **Repositorio:** `<enlace a tu repo>`
-🌐 **Demo en vivo:** `<enlace a tu app de Streamlit>`
+- 📦 **Repositorio:** https://github.com/JhonyVargas/olap-ventas-duckdb-motherduck
+- 🌐 **Demo en vivo:** https://olap-ventas-jhony.streamlit.app
 
 ---
 
@@ -89,14 +89,16 @@ def generar_ventas_dia(dia, dims):
 def get_connection(token=None, local_path=None):
     token = token or os.getenv("MOTHERDUCK_TOKEN")
     if token and local_path is None:
-        con = duckdb.connect(f"md:?motherduck_token={token}")
-        con.execute("CREATE DATABASE IF NOT EXISTS olap_ventas")
-        con.execute("USE olap_ventas")
-        return con
+        with duckdb.connect(f"md:?motherduck_token={token}") as con:
+            con.execute("CREATE DATABASE IF NOT EXISTS olap_ventas")
+        # Conectar directo a la base: un USE no lo heredarían los cursores del dashboard
+        return duckdb.connect(f"md:olap_ventas?motherduck_token={token}")
     return duckdb.connect("data/olap_ventas.duckdb")
 ```
 
 Si existe la variable `MOTHERDUCK_TOKEN`, los datos van a la nube; si no, a un archivo local. El resto del código no cambia.
+
+¿Por qué conectarse directo a `md:olap_ventas` y no hacer `USE olap_ventas`? Porque el dashboard ejecuta cada consulta en `con.cursor()`, y en DuckDB cada cursor es una conexión nueva que **no hereda el `USE`**: en MotherDuck arrancaría en la base por defecto (`my_db`) y no encontraría las tablas.
 
 La carga se hace en **una sola transacción**: si algo falla, no queda el cubo a medias. DuckDB puede leer un DataFrame de pandas directamente por su nombre de variable:
 
@@ -220,11 +222,11 @@ Gracias al `cron`, todos los días se agregan las ventas del día anterior sin i
 1. Crea una cuenta en **motherduck.com** y genera un *Access Token*.
 2. En GitHub: *Settings → Secrets and variables → Actions* → agrega `MOTHERDUCK_TOKEN`.
 3. En *Actions*, ejecuta el workflow con **Run workflow** para la primera carga.
-4. En **share.streamlit.io** → *Create app* → elige el repo y `streamlit_app.py`. En *Advanced settings → Secrets* pega:
+4. En **share.streamlit.io** → *Create app* → elige el repo y `streamlit_app.py`. En *Advanced settings* elige **Python 3.12** y en *Secrets* pega:
    ```toml
    MOTHERDUCK_TOKEN = "tu_token"
    ```
-5. En un par de minutos tienes una URL pública `https://<tu-app>.streamlit.app`.
+5. En un par de minutos tienes una URL pública como `https://<tu-app>.streamlit.app` (la nuestra es https://olap-ventas-jhony.streamlit.app).
 
 ## 9. Lo que aprendimos
 
