@@ -53,8 +53,12 @@ def estilo(fig, alto: int = 380, leyenda: bool = True):
         legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0),
         bargap=0.35, barcornerradius=4, hoverlabel=dict(bgcolor="white"),
     )
-    fig.update_xaxes(automargin=True, showgrid=False, linecolor="#c3c2b7", tickfont_color="#52514e", title_font_color="#52514e")
-    fig.update_yaxes(automargin=True, gridcolor="#e1e0d9", zeroline=False, tickformat="~s", tickfont_color="#52514e", title_font_color="#52514e")
+    # autotypenumbers="strict": textos como "2023" se tratan como categorías, no como números
+    # (si no, Plotly dibuja un eje numérico con medios años: 2022.5, 2023.5...)
+    fig.update_xaxes(automargin=True, showgrid=False, linecolor="#c3c2b7", tickfont_color="#52514e",
+                     title_font_color="#52514e", autotypenumbers="strict")
+    fig.update_yaxes(automargin=True, gridcolor="#e1e0d9", zeroline=False, tickformat="~s", tickfont_color="#52514e",
+                     title_font_color="#52514e", autotypenumbers="strict")
     return fig
 
 
