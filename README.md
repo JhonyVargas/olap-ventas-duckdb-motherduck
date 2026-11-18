@@ -106,4 +106,4 @@ streamlit run streamlit_app.py  # http://localhost:8501
 
 ## Tecnologías
 
-DuckDB 1.3 · MotherDuck · Python 3.12 · pandas · Streamlit · Plotly · pytest · GitHub Actions
+DuckDB 1.5 · MotherDuck · Python 3.12 · pandas · Streamlit · Plotly · pytest · GitHub Actions
